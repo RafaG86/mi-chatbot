@@ -1,0 +1,17 @@
+{
+  "name": "mi-chatbot",
+  "version": "1.0.0",
+  "description": "Bot de Telegram para Bogoker",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "mongoose": "^5.13.8",
+    "mysql2": "^3.13.0",
+    "node-telegram-bot-api": "^0.50.0"
+  }
+}
