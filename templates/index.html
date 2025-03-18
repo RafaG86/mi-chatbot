@@ -1,0 +1,63 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Inmuebles</title>
+    <!-- Bootstrap (opcional) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Registros de Inmuebles</h1>
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>De</th>
+                    <th>Mensaje</th>
+                    <th>Fecha</th>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>
+                    <th>Cédula</th>
+                    <th>Ubicación</th>
+                    <th>Valor</th>
+                    <th>Acepta Política</th>
+                    <th>Dirección</th>
+                    <th>Teléfono</th>
+                    <th>Correo Electrónico</th>
+                    <th>Tipo Inmueble</th>
+                    <th>Estado</th>
+                    <th>Tiempo de Uso</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                <tr>
+                    <td>{{ message.from }}</td>
+                    <td>{{ message.body }}</td>
+                    <td>{{ message.timestamp }}</td>
+                    <td>{{ message.nombre }}</td>
+                    <td>{{ message.apellidos }}</td>
+                    <td>{{ message.cedula }}</td>
+                    <td>{{ message.ubicacionInmueble }}</td>
+                    <td>{{ message.valorInmueble }}</td>
+                    <td>{{ 'Sí' if message.aceptaPolitica else 'No' }}</td>
+                    <td>{{ message.direccion }}</td>
+                    <td>{{ message.telefono }}</td>
+                    <td>{{ message.correoElectronico }}</td>
+                    <td>{{ message.tipoInmueble }}</td>
+                    <td>{{ message.estado }}</td>
+                    <td>{{ message.tiempoUso }}</td>
+                    <td>
+                        <a href="{{ url_for('delete_record', id=message.id) }}" class="btn btn-danger btn-sm">Borrar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

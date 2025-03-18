@@ -1,0 +1,27 @@
+<!-- filepath: /c:/Mi web/Bogoker/mi-chatbot/views/index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensajes</title>
+</head>
+<body>
+    <h1>Mensajes</h1>
+    <ul>
+        <% messages.forEach(message => { %>
+            <li>
+                <strong><%= message.from %>:</strong> <%= message.body %> (<%= message.timestamp %>)
+                <ul>
+                    <li>Nombre: <%= message.nombre %></li>
+                    <li>Apellidos: <%= message.apellidos %></li>
+                    <li>Cédula: <%= message.cedula %></li>
+                    <li>Ubicación del Inmueble: <%= message.ubicacionInmueble %></li>
+                    <li>Valor del Inmueble: <%= message.valorInmueble %></li>
+                    <li>Acepta Política: <%= message.aceptaPolitica ? 'Sí' : 'No' %></li>
+                </ul>
+            </li>
+        <% }) %>
+    </ul>
+</body>
+</html>
