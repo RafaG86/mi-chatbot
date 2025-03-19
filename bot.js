@@ -17,6 +17,8 @@ const bot = new TelegramBot(TOKEN, { polling: true });
 
 const userSessions = {};
 
+const ciudadesColombia = require('./ciudadesColombia'); // Importar la lista de ciudades
+
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const from = msg.from.id;
@@ -28,6 +30,13 @@ bot.on('message', async (msg) => {
     const session = userSessions[from];
 
     try {
+        // Verificar si el usuario quiere reiniciar el bot
+        if (msg.text.toLowerCase() === 'reiniciar') {
+            delete userSessions[from];
+            await bot.sendMessage(chatId, 'El bot ha sido reiniciado. Escribe cualquier mensaje para comenzar de nuevo.');
+            return;
+        }
+
         switch (session.step) {
             case 0:
                 await bot.sendMessage(chatId, 'Bienvenido a Bogoker SAS, ¿desea ingresar un inmueble para venta? (si/no)');
@@ -43,9 +52,15 @@ bot.on('message', async (msg) => {
                 }
                 break;
             case 2:
-                session.data.ubicacionInmueble = msg.text;
-                await bot.sendMessage(chatId, '¿Acepta la política de ventas del 3% de comisión como participación de la inmobiliaria? (si/no)');
-                session.step++;
+                // Validar que la ubicación esté en la lista de ciudades de Colombia
+                const ciudadIngresada = msg.text.trim();
+                if (ciudadesColombia.map(ciudad => ciudad.toLowerCase()).includes(ciudadIngresada.toLowerCase())) {
+                    session.data.ubicacionInmueble = ciudadIngresada;
+                    await bot.sendMessage(chatId, '¿Acepta la política de ventas del 3% de comisión como participación de la inmobiliaria? (si/no)');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese una ciudad válida de Colombia (no pueblos ni municipios).');
+                }
                 break;
             case 3:
                 if (msg.text.toLowerCase() === 'si') {
@@ -58,19 +73,34 @@ bot.on('message', async (msg) => {
                 }
                 break;
             case 4:
-                session.data.nombre = msg.text;
-                await bot.sendMessage(chatId, 'Por favor, indíqueme sus apellidos.');
-                session.step++;
+                // Validar que el nombre solo contenga caracteres alfabéticos
+                if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(msg.text)) {
+                    session.data.nombre = msg.text;
+                    await bot.sendMessage(chatId, 'Por favor, indíqueme sus apellidos.');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese un nombre válido (solo letras).');
+                }
                 break;
             case 5:
-                session.data.apellidos = msg.text;
-                await bot.sendMessage(chatId, 'Por favor, indíqueme su cédula.');
-                session.step++;
+                // Validar que los apellidos solo contengan caracteres alfabéticos
+                if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(msg.text)) {
+                    session.data.apellidos = msg.text;
+                    await bot.sendMessage(chatId, 'Por favor, indíqueme su cédula.');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese apellidos válidos (solo letras).');
+                }
                 break;
             case 6:
-                session.data.cedula = msg.text;
-                await bot.sendMessage(chatId, 'Por favor, indíqueme el valor del inmueble.');
-                session.step++;
+                // Validar que la cédula solo contenga números
+                if (/^\d+$/.test(msg.text)) {
+                    session.data.cedula = msg.text;
+                    await bot.sendMessage(chatId, 'Por favor, indíqueme el valor del inmueble.');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese un número de cédula válido (solo números).');
+                }
                 break;
             case 7:
                 const valor = parseFloat(msg.text.replace(',', '.')); // Convierte a número y maneja decimales con coma
@@ -80,7 +110,7 @@ bot.on('message', async (msg) => {
                     session.data.valorInmueble = valor;
                     await bot.sendMessage(chatId, 'Por favor, indíqueme la dirección del inmueble.');
                     session.step++;
-                    }
+                }
                 break;
             case 8:
                 session.data.direccion = msg.text;
@@ -88,19 +118,35 @@ bot.on('message', async (msg) => {
                 session.step++;
                 break;
             case 9:
-                session.data.telefono = msg.text;
-                await bot.sendMessage(chatId, 'Por favor, indíqueme su correo electrónico.');
-                session.step++;
+                // Validar que el teléfono solo contenga números
+                if (/^\d+$/.test(msg.text)) {
+                    session.data.telefono = msg.text;
+                    await bot.sendMessage(chatId, 'Por favor, indíqueme su correo electrónico.');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese un número de teléfono válido (solo números).');
+                }
                 break;
             case 10:
-                session.data.correoElectronico = msg.text;
-                await bot.sendMessage(chatId, 'Por favor, indíqueme el tipo de inmueble (por ejemplo: casa, apartamento, etc.).');
-                session.step++;
+                // Validar que el correo electrónico tenga un formato válido
+                if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(msg.text)) {
+                    session.data.correoElectronico = msg.text;
+                    await bot.sendMessage(chatId, 'Por favor, indíqueme el tipo de inmueble (por ejemplo: casa, apartamento, etc.).');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese un correo electrónico válido.');
+                }
                 break;
             case 11:
-                session.data.tipoInmueble = msg.text;
-                await bot.sendMessage(chatId, '¿El inmueble es usado o nuevo?');
-                session.step++;
+                // Validar que el tipo de inmueble sea uno de los permitidos
+                const tiposValidos = ['casa', 'apartamento', 'finca', 'predio', 'local', 'lote'];
+                if (tiposValidos.includes(msg.text.toLowerCase())) {
+                    session.data.tipoInmueble = msg.text.toLowerCase();
+                    await bot.sendMessage(chatId, '¿El inmueble es usado o nuevo?');
+                    session.step++;
+                } else {
+                    await bot.sendMessage(chatId, 'Por favor, ingrese un tipo de inmueble válido (casa, apartamento, finca, predio, local, lote).');
+                }
                 break;
             case 12: {
                 session.data.estado = msg.text.toLowerCase().trim();
